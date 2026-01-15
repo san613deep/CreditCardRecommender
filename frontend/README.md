@@ -172,10 +172,4 @@ Open [http://localhost:3000](http://localhost:3000) to view the app.
 
 ---
 
-## 📬 Contact
-
-For questions or feedback, open an issue or contact [@saadArfin](https://github.com/saadArfin).
-
----
-
 **Credit Card Recommender** — A luxury fintech experience for smarter credit card choices, powered by Next.js, FastAPI, Gemini LLM, and Pinecone.
