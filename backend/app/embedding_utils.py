@@ -25,8 +25,6 @@ def generate_embedding(card: dict):
         config=types.EmbedContentConfig(task_type="SEMANTIC_SIMILARITY"),
     )
     embedding = result.embeddings
-    print("DEBUG: embedding type:", type(embedding))
-    print("DEBUG: embedding value:", embedding)
     # Flatten if nested (e.g., [[...]] instead of [...])
     if (
         isinstance(embedding, list)
@@ -34,8 +32,6 @@ def generate_embedding(card: dict):
         and isinstance(embedding[0], list)
     ):
         embedding = embedding[0]
-    print("DEBUG: final embedding type:", type(embedding))
-    print("DEBUG: final embedding value:", embedding)
     return embedding
 
 
