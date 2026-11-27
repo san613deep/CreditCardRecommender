@@ -54,6 +54,7 @@ Create a `.env` file in `backend/` containing:
 ```
 GEMINI_API_KEY=your_gemini_api_key
 PINECONE_API_KEY=your_pinecone_api_key
+CORS_ORIGINS=http://localhost:3000
 ```
 
 Run the backend (development):
@@ -93,8 +94,10 @@ API (backend)
 - POST `/recommend` — query params: `session_id` and `top_k` → returns `{ recommendations: [...] }`
 
 Notes:
-- Sessions are stored in-memory in `backend/app/gemini_api.py` and persisted to `sessions.json` when available. This is sufficient for development but consider a DB for production.
-- The `recommend` flow extracts structured preferences from session history (LLM extraction), creates an embedding of the preferences, queries Pinecone for the nearest card metadata, and augments results with an LLM-generated reason.
+- Sessions are stored in memory and written to a local `sessions.json` file. This is a single-process development mechanism, not durable multi-user storage. Session files may contain personal financial preferences; keep them private and never commit them. The root `.gitignore` excludes the file.
+- The `recommend` flow extracts structured preferences from session history, embeds those preferences, queries Pinecone for nearest card metadata, and adds an LLM-generated explanation.
+- The backend CORS allow-list is configured through `CORS_ORIGINS`; use the exact deployed frontend origin(s), comma-separated. Avoid wildcard origins when credentials are enabled.
+- The Pinecone seed script prepares vector records, but its `index.upsert` call remains commented out. Provision and seed the index deliberately before expecting recommendations to work.
 
 ---
 
@@ -128,11 +131,26 @@ Deployment
 - Backend: Render / Railway / Fly / any container host. Ensure CORS allows the frontend origin (`backend/app/main.py` currently allows `*` origins).
 
 Production considerations
-- Replace file-based `sessions.json` with a persistent store (Redis/Postgres) for multi-instance deployments.
+- Replace file-based `sessions.json` with a persistent store (Redis/Postgres) and add session expiry and deletion controls.
 - Secure secrets via host-provided environment variables (do not commit `.env`).
-- Monitor LLM and Pinecone costs and add request-rate limits.
+- Restrict CORS to trusted frontend origins.
+- Add authentication, request-rate limits, input-size limits and structured audit logging.
+- Monitor LLM and Pinecone costs.
 
 ---
+
+
+## Offline backend tests
+
+From the repository root:
+
+```bash
+cd backend
+python -m pip install -r requirements.txt
+GEMINI_API_KEY=test-placeholder python -m pytest tests/ -q
+```
+
+The utility tests mock the Gemini generation boundary and verify preference summarization plus the deterministic reward-estimation fallback. They do not require live Gemini or Pinecone API calls. GitHub Actions runs these tests on pushes and pull requests.
 
 Contributing
 - Feel free to open issues or PRs. For changes to prompts or model usage, include rationale and tests/examples for regressions.
