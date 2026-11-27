@@ -2,6 +2,7 @@
 from types import SimpleNamespace
 
 import app.utils as utils
+import app.gemini_api as gemini_api
 
 
 def test_preference_summary_includes_structured_profile_fields(monkeypatch):
@@ -36,7 +37,7 @@ def test_reward_simulation_uses_deterministic_fallback_when_llm_fails(monkeypatc
         raise RuntimeError("offline test: no external API")
 
     monkeypatch.setattr(
-        utils,
+        gemini_api,
         "genai_client",
         SimpleNamespace(models=SimpleNamespace(generate_content=fail_generation)),
     )
