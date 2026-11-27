@@ -34,7 +34,6 @@ async def chat(req: ChatRequest):
             status_code=400, detail="session_id and user_input required"
         )
     bot_reply = await chat_with_gemini(req.session_id, req.user_input)
-    print("DEBUG: bot_reply:", bot_reply)
     return {"reply": bot_reply, "history": sessions[req.session_id]["history"]}
 
 
@@ -48,12 +47,8 @@ async def recommend(session_id: str, top_k: int = 3):
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    print(
-        "DEBUG: Session history before extracting preferences:", session.get("history")
-    )
     extract_user_preferences_and_update_session(session)
     save_sessions()
-    print("DEBUG: Preferences after extraction:", session.get("preferences"))
 
     recommendations = get_top_credit_card_recommendations_from_session(
         session, index, top_k=top_k
@@ -69,5 +64,4 @@ async def recommend(session_id: str, top_k: int = 3):
         }
         for card in recommendations
     ]
-    print("DEBUG: minimal_recommendations:", minimal_recommendations)
     return {"recommendations": minimal_recommendations}
